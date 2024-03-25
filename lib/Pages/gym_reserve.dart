@@ -1,0 +1,162 @@
+import 'package:aub_gymsystem/Logic/firebasehelper_class.dart';
+import 'package:aub_gymsystem/Widgets/gym_calendar.dart';
+import 'package:aub_gymsystem/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+class ReservationPage extends StatefulWidget {
+  const ReservationPage({super.key});
+
+  @override
+  State<ReservationPage> createState() => _ReservationPageState();
+}
+
+class _ReservationPageState extends State<ReservationPage> {
+  final TimeOfDay startTime = const TimeOfDay(hour: 6, minute: 30);
+  final TimeOfDay endTime = const TimeOfDay(hour: 21, minute: 30); // 9:30 PM
+
+  int? selectedValue = 0;
+
+  DateTime selectedDate = DateTime.now();
+
+  List<int> spots = List.generate(10, (index) => 30);
+
+// Function to update spots based on reservations for a selected date
+  void updateSpots(DateTime selectedDate) {
+    FirebaseHelperClass().getReservations().then(
+      (value) {
+        // Function to get date without time from Timestamp
+        DateTime getDateOnlyFromTimestamp(Timestamp timestamp) {
+          DateTime dateTime = timestamp.toDate();
+          return DateTime(dateTime.year, dateTime.month, dateTime.day);
+        }
+
+        // Function to get date without time from DateTime
+        DateTime getDateOnly(DateTime dateTime) {
+          return DateTime(dateTime.year, dateTime.month, dateTime.day);
+        }
+
+        for (var element in value) {
+          if (getDateOnlyFromTimestamp(element["date"]) ==
+              getDateOnly(selectedDate)) {
+            setState(
+              () {
+                if (spots[element["time"]] > 0) {
+                  spots[element["time"]] = spots[element["time"]] - 1;
+                } else {}
+              },
+            );
+          }
+        }
+      },
+    );
+  }
+
+  void showReservationDialog(BuildContext context) {
+    String removeTime(DateTime dateTime) {
+      return '${dateTime.year}-${dateTime.month}-${dateTime.day}';
+    }
+
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: const Text('Reservation Details'),
+          content: Text(
+              'Your reservation has been successfully submitted at ${removeTime(selectedDate)} from ${ConstantsClass.timeSlots[selectedValue!]}'),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    updateSpots(selectedDate);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Reservation"),
+      ),
+      floatingActionButton: FloatingActionButton(
+          backgroundColor: ConstantsClass.secondaryColor,
+          child: Image.asset(
+            ConstantsClass.reserve,
+            fit: BoxFit.cover,
+          ),
+          onPressed: () {
+            if (spots[selectedValue!] > 0) {
+              FirebaseHelperClass()
+                  .postReservation(
+                context: context,
+                date: selectedDate,
+                index: selectedValue!,
+                name: "Gym Reservation",
+              )
+                  .whenComplete(() {
+                FirebaseHelperClass().showReservationDialog(
+                    context,
+                    selectedDate,
+                    selectedValue!,
+                    "has been successfully submitted");
+              });
+            } else {
+              FirebaseHelperClass().showReservationDialog(
+                  context, selectedDate, selectedValue!, "is fully booked");
+            }
+          }),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: GymCalendar(
+              selectedDate: selectedDate,
+              onSelection: (time1) {
+                setState(
+                  () {
+                    selectedDate = time1;
+                    setState(() {
+                      spots = List.generate(10, (index) => 30);
+                    });
+                    updateSpots(time1);
+                  },
+                );
+              },
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final timeSlot = ConstantsClass.timeSlots[index];
+                return RadioListTile<int>(
+                  value: index,
+                  groupValue: selectedValue,
+                  onChanged: (value) async {
+                    setState(() {
+                      selectedValue = value!;
+                    });
+                  },
+                  title: Text(timeSlot),
+                  subtitle: Text("${spots[index]} Spots left"),
+                );
+              },
+              childCount: ConstantsClass.timeSlots.length,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
