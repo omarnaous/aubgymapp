@@ -1,12 +1,20 @@
-import 'package:aub_gymsystem/Logic/firebasehelper_class.dart';
-import 'package:aub_gymsystem/Widgets/gym_calendar.dart';
-import 'package:aub_gymsystem/constants.dart';
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'package:aub_gymsystem/Logic/firebasehelper_class.dart';
+import 'package:aub_gymsystem/Widgets/gym_calendar.dart';
+import 'package:aub_gymsystem/constants.dart';
+
 class ReservationPage extends StatefulWidget {
-  const ReservationPage({super.key});
+  const ReservationPage({
+    Key? key,
+    this.reservationType,
+    this.trainerUid,
+  }) : super(key: key);
+  final String? reservationType;
+  final String? trainerUid;
 
   @override
   State<ReservationPage> createState() => _ReservationPageState();
@@ -39,7 +47,8 @@ class _ReservationPageState extends State<ReservationPage> {
 
         for (var element in value) {
           if (getDateOnlyFromTimestamp(element["date"]) ==
-              getDateOnly(selectedDate)) {
+                  getDateOnly(selectedDate) &&
+              element["active"] == true) {
             setState(
               () {
                 if (spots[element["time"]] > 0) {
@@ -104,7 +113,8 @@ class _ReservationPageState extends State<ReservationPage> {
                 context: context,
                 date: selectedDate,
                 index: selectedValue!,
-                name: "Gym Reservation",
+                name: widget.reservationType ?? "Gym Reservation",
+                trainerId: widget.trainerUid,
               )
                   .whenComplete(() {
                 FirebaseHelperClass().showReservationDialog(

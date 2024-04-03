@@ -1,7 +1,12 @@
+import 'dart:math';
+
 import 'package:aub_gymsystem/Logic/firebasehelper_class.dart';
+import 'package:aub_gymsystem/Models/classes_model.dart';
 import 'package:aub_gymsystem/Widgets/gym_calendar.dart';
+import 'package:aub_gymsystem/Widgets/reservationclass_card.dart';
 import 'package:aub_gymsystem/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -16,6 +21,7 @@ class ClassList extends StatefulWidget {
 class _ClassListState extends State<ClassList> {
   Set<String> classesNames = {};
   int classSelected = 0;
+  String userId = '';
   @override
   void initState() {
     FirebaseFirestore.instance.collection('classes').get().then((value) {
@@ -23,6 +29,17 @@ class _ClassListState extends State<ClassList> {
         classesNames.add(element.doc.data()?["className"]);
       }
     });
+
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .snapshots()
+        .listen((event) {
+      setState(() {
+        userId = event.data()?["studentId"];
+      });
+    });
+
     super.initState();
   }
 
@@ -99,29 +116,6 @@ class _ClassListState extends State<ClassList> {
               });
             },
           ),
-          // if (classesNames.isNotEmpty)
-          //   Padding(
-          //     padding: const EdgeInsets.all(20.0),
-          //     child: Column(
-          //       crossAxisAlignment: CrossAxisAlignment.stretch,
-          //       children: [
-          //         DropdownButton<String>(
-          //           items: classesNames.toList().map((String value) {
-          //             return DropdownMenuItem<String>(
-          //               value: value,
-          //               child: Text(value),
-          //             );
-          //           }).toList(),
-          //           onChanged: (newItem) {
-          //             setState(() {});
-          //             classSelected =
-          //                 classesNames.toList().indexOf(newItem ?? "");
-          //           },
-          //           hint: Text(classesNames.toList()[classSelected]),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
           Expanded(
             child: FutureBuilder<QuerySnapshot>(
               future: FirebaseFirestore.instance.collection('classes').get(),
@@ -132,58 +126,86 @@ class _ClassListState extends State<ClassList> {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
                   return ListView.builder(
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (context, index) {
-                      final doc = snapshot.data!.docs[index];
-                      final className = doc['className'];
-                      final classTime = doc['startTime'];
-                      final date = doc['date'];
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: (context, index) {
+                        Map<String, dynamic> data = snapshot.data?.docs[index]
+                            .data() as Map<String, dynamic>;
 
-                      DateTime getDateOnlyFromTimestamp(Timestamp timestamp) {
-                        DateTime dateTime = timestamp.toDate();
-                        return DateTime(
-                          dateTime.year,
-                          dateTime.month,
-                          dateTime.day,
-                        );
-                      }
+                        ClassesModel classesModel = ClassesModel.fromJson(data);
 
-                      DateTime getDateOnly(DateTime dateTime) {
-                        return DateTime(
-                          dateTime.year,
-                          dateTime.month,
-                          dateTime.day,
-                        );
-                      }
+                        String selectedFormattedDate =
+                            '${selectedDate.day}.${selectedDate.month}.${selectedDate.year}';
 
-                      if (getDateOnlyFromTimestamp(date)
-                              .isBefore(getDateOnly(selectedDate)) !=
-                          true) {
-                        return ReservationCard(
-                          title: className,
-                          date:
-                              "${getDateOnlyFromTimestamp(date).day}/${getDateOnlyFromTimestamp(date).month}/${getDateOnlyFromTimestamp(date).year} $classTime",
-                          spotsLeft: spots[index],
-                          onPressed: () {
-                            // Handle reservation button press
-                            FirebaseHelperClass()
-                                .postReservation(
-                              context: context,
-                              index: index,
-                              date: selectedDate,
-                              name: className,
-                            )
-                                .whenComplete(() {
-                              showReservationDialog(context);
-                            });
-                          },
-                        );
-                      } else {
-                        // Return an empty container if the condition is not met
-                        return Container();
-                      }
-                    },
-                  );
+                        String classesModelFormattedDate =
+                            '${classesModel.date.toDate().day}.${classesModel.date.toDate().month}.${classesModel.date.toDate().year}';
+
+                        if (selectedFormattedDate ==
+                            classesModelFormattedDate) {
+                          if (classesModel.attendees != null) {
+                            String userIdString =
+                                userId.toString(); // Convert userId to string
+                            if (classesModel.attendees!
+                                .contains(userIdString)) {
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ReservationCard(
+                                  locked: false,
+                                  title: classesModel.className,
+                                  date:
+                                      "${classesModel.formatDate()} ${classesModel.classTime}",
+                                  spotsLeft: spots[index],
+                                  onPressed: () {
+                                    // Handle reservation button press
+                                    FirebaseHelperClass()
+                                        .postReservation(
+                                      context: context,
+                                      index: index,
+                                      date: selectedDate,
+                                      name: classesModel.className,
+                                    )
+                                        .whenComplete(() {
+                                      showReservationDialog(context);
+                                    });
+                                  },
+                                ),
+                              );
+                            } else {
+                              return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ReservationCard(
+                                    locked: true,
+                                    title: classesModel.className,
+                                    date:
+                                        "${classesModel.formatDate()} ${classesModel.classTime}",
+                                    spotsLeft: spots[index],
+                                    onPressed: () {
+                                      // Handle reservation button press
+                                      FirebaseHelperClass()
+                                          .postReservation(
+                                        context: context,
+                                        index: index,
+                                        date: selectedDate,
+                                        name: classesModel.className,
+                                      )
+                                          .whenComplete(() {
+                                        showReservationDialog(context);
+                                      });
+                                    },
+                                  ));
+                            }
+                          }
+                        } else {
+                          return SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.35,
+                            child: const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("No Classes Available at this Date")
+                              ],
+                            ),
+                          );
+                        }
+                      });
                 } else {
                   return Container(
                     alignment: Alignment.center,
@@ -194,42 +216,6 @@ class _ClassListState extends State<ClassList> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class ReservationCard extends StatelessWidget {
-  final String title;
-  final String date;
-  final int spotsLeft;
-  final VoidCallback onPressed;
-
-  const ReservationCard({
-    Key? key,
-    required this.title,
-    required this.date,
-    required this.spotsLeft,
-    required this.onPressed,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: ListTile(
-        title: Text(title),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(date),
-            Text("$spotsLeft Spots left"),
-          ],
-        ),
-        trailing: ElevatedButton(
-          onPressed: onPressed,
-          child: const Text("Reserve"),
-        ),
       ),
     );
   }

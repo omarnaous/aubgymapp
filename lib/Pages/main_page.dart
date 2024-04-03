@@ -1,6 +1,6 @@
 import 'package:aub_gymsystem/Pages/home_page.dart';
 import 'package:aub_gymsystem/Pages/notifications_page.dart';
-import 'package:aub_gymsystem/Pages/profile_page.dart';
+import 'package:aub_gymsystem/Pages/Admin/profile_page.dart';
 import 'package:aub_gymsystem/constants.dart';
 import 'package:flutter/material.dart';
 

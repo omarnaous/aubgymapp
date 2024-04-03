@@ -1,9 +1,18 @@
+import 'package:aub_gymsystem/Pages/gym_reserve.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:url_launcher/url_launcher.dart'; // Import the url_launcher package
 
-class TrainersPage extends StatelessWidget {
+class TrainersPage extends StatefulWidget {
   const TrainersPage({Key? key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _TrainersPageState createState() => _TrainersPageState();
+}
+
+class _TrainersPageState extends State<TrainersPage> {
+  late String _selectedTrainer = '';
+  late String _selectedTrainerUid = '';
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +35,16 @@ class TrainersPage extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.person),
+                  child: RadioListTile<String>(
                     title: Text(trainers[index]['name']),
-                    subtitle: Text(trainers[index]['number']),
-                    trailing: const Icon(Icons.phone),
-                    onTap: () => _callNumber(
-                        context,
-                        trainers[index]
-                            ['number']), // Call _callNumber function on tap
+                    value: trainers[index]['name'],
+                    groupValue: _selectedTrainer,
+                    onChanged: (String? value) {
+                      setState(() {
+                        _selectedTrainer = value!;
+                        _selectedTrainerUid = trainers[index]["userId"]!;
+                      });
+                    },
                   ),
                 ),
               );
@@ -42,21 +52,35 @@ class TrainersPage extends StatelessWidget {
           );
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          if (_selectedTrainer.isNotEmpty) {
+            // Perform reservation action with selected trainer
+            navigatetoReservePage(
+                context, _selectedTrainer, _selectedTrainerUid);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Please select a trainer to reserve.'),
+            ));
+          }
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
-  // Function to call the phone number
-  _callNumber(BuildContext context, String phoneNumber) async {
-    String telScheme = 'tel:$phoneNumber';
-    // ignore: deprecated_member_use
-    if (await canLaunch(telScheme)) {
-      // ignore: deprecated_member_use
-      await launch(telScheme);
-    } else {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Unable to make a call'),
-      ));
-    }
+  // Function to reserve the selected trainer
+  void navigatetoReservePage(
+      BuildContext context, String trainerName, String trainerUid) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (BuildContext context) {
+          return ReservationPage(
+            reservationType: trainerName,
+            trainerUid: trainerUid,
+          );
+        },
+      ),
+    );
   }
 }

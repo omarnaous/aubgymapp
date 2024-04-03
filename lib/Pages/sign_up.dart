@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:aub_gymsystem/Logic/firebasehelper_class.dart';
 import 'package:aub_gymsystem/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,15 +27,11 @@ class _SignUpPageState extends State<SignUpPage> {
 
   String selectedRole = 'student'; // Default role is student
 
-  List<String> roles = [
-    "Guest",
-    "Student",
-    "Faculty",
-  ];
+  List<String> roles = ["Guest", "Student", "Faculty", 'Personal Trainer'];
 
   int selectedIndex = 0;
 
-  bool isGuest = false; // Track if the user is signing up as a guest
+  bool isGuest = true; // Track if the user is signing up as a guest
 
   // Function to generate a random 6-digit ID
   String generateRandomId() {
@@ -76,6 +73,7 @@ class _SignUpPageState extends State<SignUpPage> {
         'locked': locked
       });
     } on FirebaseAuthException catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: ConstantsClass.themeColor,
@@ -148,8 +146,20 @@ class _SignUpPageState extends State<SignUpPage> {
                     child: TextFormField(
                       controller: studentIdController,
                       keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText:
+                            selectedIndex == 1 ? 'Student ID' : 'Faculty ID',
+                      ),
+                    ),
+                  ),
+
+                if (isGuest)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextFormField(
+                      keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        labelText: 'Student ID',
+                        labelText: 'Referral Email',
                       ),
                     ),
                   ),
@@ -166,39 +176,46 @@ class _SignUpPageState extends State<SignUpPage> {
                 SizedBox(
                   height: height * 0.05,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(
-                    roles.length,
-                    (index) {
-                      return ElevatedButton(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
-                            selectedIndex == index
-                                ? ConstantsClass.themeColor
-                                : Colors.white,
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(
+                      roles.length,
+                      (index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(
+                                selectedIndex == index
+                                    ? ConstantsClass.themeColor
+                                    : Colors.white,
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                selectedIndex = index;
+                                // Check if the selected role is Guest
+                                isGuest = roles[index] == "Guest";
+                              });
+                            },
+                            child: Text(
+                              roles[index],
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: selectedIndex == index
+                                    ? Colors.white
+                                    : ConstantsClass.themeColor,
+                              ),
+                            ),
                           ),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            selectedIndex = index;
-                            // Check if the selected role is Guest
-                            isGuest = roles[index] == "Guest";
-                          });
-                        },
-                        child: Text(
-                          roles[index],
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: selectedIndex == index
-                                ? Colors.white
-                                : ConstantsClass.themeColor,
-                          ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
+
                 SizedBox(
                   height: height * 0.05,
                 ),
@@ -244,7 +261,14 @@ class _SignUpPageState extends State<SignUpPage> {
                               roles[selectedIndex] == "Student" ? false : true,
                           role: roles[selectedIndex]
                               .toLowerCase(), // Pass selected role to function
-                        );
+                        ).whenComplete(() {
+                          if (roles[selectedIndex] == 'Personal Trainer') {
+                            FirebaseHelperClass().addTrainer(
+                                context,
+                                "$firstName $lastName",
+                                FirebaseAuth.instance.currentUser!.uid);
+                          }
+                        });
                         buttonController.success();
                         buttonController.reset();
                         // ignore: use_build_context_synchronously

@@ -145,7 +145,7 @@ class _IntroPageState extends State<IntroPage> {
                             child: Text(
                               "SIGN UP",
                               style:
-                                  TextStyle(fontSize: 20, color: Colors.white),
+                                  TextStyle(fontSize: 30, color: Colors.white),
                             ),
                           ),
                         ),

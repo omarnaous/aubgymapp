@@ -121,6 +121,7 @@ class FirebaseHelperClass {
       required DateTime date,
       required String name,
       required BuildContext context,
+      String? trainerId,
       String? poolLane}) async {
     try {
       // Get the reference to the "reservations" collection
@@ -134,7 +135,8 @@ class FirebaseHelperClass {
         'userId': FirebaseAuth.instance.currentUser?.uid,
         'active': true,
         'name': name,
-        'lane': poolLane
+        'lane': poolLane,
+        'trainerId': trainerId
       });
 
       // Show a success message or navigate to a different page
@@ -192,12 +194,162 @@ class FirebaseHelperClass {
               child: const Text('Close'),
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
-                Navigator.of(context).pop(); // Close the dialog
               },
             ),
           ],
         );
       },
     );
+  }
+
+  Future<void> updateAttendeesList(
+      String docId, String attendeeId, BuildContext context) async {
+    try {
+      await FirebaseFirestore.instance.collection('classes').doc(docId).update({
+        'attendees': FieldValue.arrayUnion([attendeeId]),
+      });
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Attendee added successfully')),
+      );
+    } catch (error) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding attendee: $error')),
+      );
+    }
+  }
+
+  Future<void> addClass(
+      BuildContext context,
+      TextEditingController classNameController,
+      DateTime selectedDate,
+      TimeOfDay selectedStartTime,
+      TimeOfDay selectedEndTime) async {
+    try {
+      if (classNameController.text.isNotEmpty) {
+        await FirebaseFirestore.instance.collection('classes').add({
+          'className': classNameController.text,
+          'date': selectedDate,
+          'startTime':
+              'From ${selectedStartTime.format(context)} to ${selectedEndTime.format(context)} ',
+        });
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Class Added successfully')),
+        );
+        classNameController.clear();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please fill in all fields')),
+        );
+      }
+    } catch (error) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding document: $error')),
+      );
+    }
+  }
+
+  Future<void> deleteClass(String documentId, BuildContext context) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('classes')
+          .doc(documentId)
+          .delete();
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Class deleted successfully')),
+      );
+    } catch (error) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting document: $error')),
+      );
+    }
+  }
+
+  Future<void> addClassAttendeeDialog(
+      BuildContext context, String docId) async {
+    String attendeeId = '';
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add Attendee'),
+          content: SingleChildScrollView(
+            child: TextField(
+              onChanged: (value) => attendeeId = value,
+              decoration: const InputDecoration(labelText: 'Enter Attendee ID'),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await FirebaseHelperClass()
+                    .updateAttendeesList(docId, attendeeId, context);
+                // ignore: use_build_context_synchronously
+                Navigator.of(context).pop();
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void addTrainer(BuildContext context, String name, String userId) async {
+    if (name.isNotEmpty && userId.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('trainers')
+            .doc(userId) // Set the document ID to the user's UID
+            .set({
+          'name': name,
+          'userId': userId,
+        });
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Trainer added successfully')),
+        );
+      } catch (error) {
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error adding trainer: $error')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+    }
+  }
+
+  void deleteTrainer(String documentId, BuildContext context) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('trainers')
+          .doc(documentId)
+          .delete();
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Trainer deleted successfully')),
+      );
+    } catch (error) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting trainer: $error')),
+      );
+    }
   }
 }

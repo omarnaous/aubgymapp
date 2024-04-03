@@ -139,7 +139,7 @@ class _HomePageState extends State<HomePage> {
                         (BuildContext context, int index) {
                           return GestureDetector(
                             onTap: () async {
-                              if (userClassModel.locked) {
+                              if (userClassModel.locked && index != 4) {
                               } else {
                                 if (index == 1) {
                                   // Delete document logic
@@ -180,7 +180,7 @@ class _HomePageState extends State<HomePage> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        if (userClassModel.locked)
+                                        if (userClassModel.locked && index != 4)
                                           const Icon(
                                             Icons.lock,
                                             size: 40,

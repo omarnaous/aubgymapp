@@ -35,68 +35,103 @@ class _TutorialsPageState extends State<TutorialsPage> {
               ),
             ),
             SliverToBoxAdapter(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          selectedPage = 0;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedPage == 0
-                            ? ConstantsClass.themeColor
-                            : Colors.white,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          "Beginner",
-                          style: TextStyle(
-                            fontSize: 18,
-                            color:
-                                selectedPage == 0 ? Colors.white : Colors.black,
-                            fontWeight: selectedPage == 0
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            selectedPage = 0;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: selectedPage == 0
+                              ? ConstantsClass.themeColor
+                              : Colors.white,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            "Beginner",
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: selectedPage == 0
+                                  ? Colors.white
+                                  : Colors.black,
+                              fontWeight: selectedPage == 0
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          selectedPage = 1;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedPage == 1
-                            ? ConstantsClass.themeColor
-                            : Colors.white,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          "Gym Machines",
-                          style: TextStyle(
-                            fontSize: 18,
-                            color:
-                                selectedPage == 1 ? Colors.white : Colors.black,
-                            fontWeight: selectedPage == 1
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            selectedPage = 1;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: selectedPage == 1
+                              ? ConstantsClass.themeColor
+                              : Colors.white,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            "Advanced",
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: selectedPage == 1
+                                  ? Colors.white
+                                  : Colors.black,
+                              fontWeight: selectedPage == 1
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            selectedPage = 2;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: selectedPage == 2
+                              ? ConstantsClass.themeColor
+                              : Colors.white,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            "Gym Machines",
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: selectedPage == 2
+                                  ? Colors.white
+                                  : Colors.black,
+                              fontWeight: selectedPage == 2
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -156,6 +191,58 @@ class _TutorialsPageState extends State<TutorialsPage> {
                   },
                   childCount:
                       ConstantsClass().imagesList1.length, // Number of cards
+                ),
+              )
+            else if (selectedPage == 1)
+              SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // 2 cards per row
+                  crossAxisSpacing: 10.0,
+                  mainAxisSpacing: 10.0,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Future<void> launchUrl(String url) async {
+                          if (!await launch(url)) {
+                            throw Exception('Could not launch $url');
+                          }
+                        }
+
+                        launchUrl(ConstantsClass().linksList2[index]);
+                      },
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Card(
+                            elevation: 5,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.asset(
+                                ConstantsClass().imagesList2[index],
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Text(
+                              ConstantsClass().textList1[index],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 24,
+                                color: Colors.black,
+                                backgroundColor: Colors.white,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                  childCount:
+                      ConstantsClass().textList1.length, // Number of cards
                 ),
               )
             else

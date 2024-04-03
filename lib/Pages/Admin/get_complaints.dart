@@ -1,5 +1,7 @@
+import 'package:aub_gymsystem/Models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+// ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 
 class GetComplaintsPage extends StatefulWidget {
@@ -65,8 +67,11 @@ class _GetComplaintsPageState extends State<GetComplaintsPage> {
                     return const SizedBox(); // Show nothing if user data not available
                   }
                   Map<String, dynamic> userData = userSnapshot.data!.data()!;
+
+                  UserClassModel userClassModel =
+                      UserClassModel.fromJson(userData);
                   String userName =
-                      '${userData['firstName']} ${userData['lastName']}';
+                      '${userClassModel.firstName} ${userClassModel.lastName}';
                   String complaint = complaintDoc['complaint'] as String;
                   return Padding(
                     padding: const EdgeInsets.all(8.0),

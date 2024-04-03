@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:aub_gymsystem/Logic/firebasehelper_class.dart';
 import 'package:aub_gymsystem/constants.dart';
