@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:aub_gymsystem/Logic/firebasehelper_class.dart';
 import 'package:aub_gymsystem/Models/classes_model.dart';
 import 'package:aub_gymsystem/Widgets/gym_calendar.dart';
@@ -205,6 +203,7 @@ class _ClassListState extends State<ClassList> {
                             ),
                           );
                         }
+                        return null;
                       });
                 } else {
                   return Container(

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:aub_gymsystem/Pages/Admin/add_class.dart';
-import 'package:aub_gymsystem/Pages/Admin/add_trainer.dart';
 import 'package:aub_gymsystem/Pages/Admin/manage_user.dart';
 import 'package:aub_gymsystem/Widgets/logout_column.dart';
 import 'package:aub_gymsystem/Widgets/user_profile.dart';
@@ -17,7 +16,7 @@ import 'package:aub_gymsystem/Pages/Admin/send_notif.dart';
 import 'package:aub_gymsystem/constants.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key});
+  const ProfilePage({Key? key}) : super(key: key);
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -125,6 +124,15 @@ class _ProfilePageState extends State<ProfilePage> {
                   widgetTitles: ["Reservations"],
                   navigationWidget: [
                     PersonalTrainerReservationPanel(),
+                  ],
+                  isUser: false,
+                )
+              else if (userClassModel.role == "class instructor")
+                const UserProfileWidgets(
+                  icons: [Icons.calendar_month],
+                  widgetTitles: ["My Classes"],
+                  navigationWidget: [
+                    ScheduleClass(),
                   ],
                   isUser: false,
                 )

@@ -1,7 +1,10 @@
 import 'package:aub_gymsystem/Logic/firebasehelper_class.dart';
 import 'package:aub_gymsystem/Models/classes_model.dart';
+import 'package:aub_gymsystem/Pages/class_attendees.dart';
 import 'package:aub_gymsystem/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -48,12 +51,31 @@ class _ClassesStreambuilderState extends State<ClassesStreambuilder> {
                             color: ConstantsClass.themeColor,
                           ),
                         ),
-                        TextButton(
-                            onPressed: () {
-                              FirebaseHelperClass()
-                                  .addClassAttendeeDialog(context, doc.id);
-                            },
-                            child: const Text("Add User"))
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (FirebaseAuth.instance.currentUser?.email ==
+                                'aubadmin@gmail.com')
+                              TextButton(
+                                onPressed: () {
+                                  FirebaseHelperClass()
+                                      .addClassAttendeeDialog(context, doc.id);
+                                },
+                                child: const Text("Add User"),
+                              ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (BuildContext context) {
+                                  return AttendeeSelectionPage(
+                                    attendeesId: classesModel.attendees ?? [],
+                                  );
+                                }));
+                              },
+                              child: const Text("View Attendees"),
+                            ),
+                          ],
+                        )
                       ],
                     ),
                   ),

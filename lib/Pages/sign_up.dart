@@ -27,7 +27,13 @@ class _SignUpPageState extends State<SignUpPage> {
 
   String selectedRole = 'student'; // Default role is student
 
-  List<String> roles = ["Guest", "Student", "Faculty", 'Personal Trainer'];
+  List<String> roles = [
+    "Guest",
+    "Student",
+    "Faculty",
+    'Personal Trainer',
+    "Class Instructor"
+  ];
 
   int selectedIndex = 0;
 
@@ -225,7 +231,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     String lastName = lastNameController.text;
                     String email = emailController.text;
                     String phoneNumber = phoneNumberController.text;
-                    String studentId = studentIdController.text;
+                    // String studentId = studentIdController.text;
                     String password = passwordController.text;
 
                     if (firstName.isEmpty ||
