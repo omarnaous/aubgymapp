@@ -1,3 +1,4 @@
+import 'package:aub_gymsystem/Widgets/Admin/older_notifs.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -5,6 +6,7 @@ class SendNotificationsPage extends StatefulWidget {
   const SendNotificationsPage({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _SendNotificationsPageState createState() => _SendNotificationsPageState();
 }
 
@@ -12,6 +14,38 @@ class _SendNotificationsPageState extends State<SendNotificationsPage> {
   final TextEditingController _questionController = TextEditingController();
   final TextEditingController _optionController = TextEditingController();
   List<String> options = [];
+
+  void saveQuestion() {
+    // Check if question is not empty and at least two options are provided
+    if (_questionController.text.isNotEmpty && options.length >= 2) {
+      // Save the question and options to Firestore
+      FirebaseFirestore.instance.collection('notifications').add({
+        'notification': _questionController.text,
+        'questions': options,
+        'answers': [], // Empty answers list
+        'timestamp': DateTime.now()
+      }).then((value) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Question saved successfully!')),
+        );
+        // Clear fields and options list
+        setState(() {
+          _questionController.clear();
+          _optionController.clear();
+          options.clear();
+        });
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save question: $error')),
+        );
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Please enter a question and at least two options')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +63,8 @@ class _SendNotificationsPageState extends State<SendNotificationsPage> {
                 children: [
                   TextField(
                     controller: _questionController,
-                    decoration: InputDecoration(labelText: 'Enter Question'),
+                    decoration:
+                        const InputDecoration(labelText: 'Enter Question'),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -38,7 +73,7 @@ class _SendNotificationsPageState extends State<SendNotificationsPage> {
                         child: TextField(
                           controller: _optionController,
                           decoration:
-                              InputDecoration(labelText: 'Enter Option'),
+                              const InputDecoration(labelText: 'Enter Option'),
                         ),
                       ),
                       IconButton(
@@ -119,52 +154,11 @@ class _SendNotificationsPageState extends State<SendNotificationsPage> {
                         }
                       }
 
-                      return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Card(
-                          child: Column(
-                            children: [
-                              ListTile(
-                                title: Text(snapshot.data?.docs[index]
-                                    .data()["notification"]),
-                                trailing: IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () {
-                                      FirebaseFirestore.instance
-                                          .collection('notifications')
-                                          .doc(snapshot.data?.docs[index].id)
-                                          .delete();
-                                    }),
-                              ),
-                              Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: List.generate(
-                                          questions.length,
-                                          (index) => Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                  "${questionResults[questions[index]]} answered\n${questions[index]}",
-                                                  textAlign: TextAlign.start,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              )),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      );
+                      return OlderNotificationCArd(
+                          snapshot: snapshot,
+                          index: index,
+                          questions: questions,
+                          questionResults: questionResults);
                     });
               } else {
                 return const SliverToBoxAdapter();
@@ -174,37 +168,5 @@ class _SendNotificationsPageState extends State<SendNotificationsPage> {
         ],
       ),
     );
-  }
-
-  void saveQuestion() {
-    // Check if question is not empty and at least two options are provided
-    if (_questionController.text.isNotEmpty && options.length >= 2) {
-      // Save the question and options to Firestore
-      FirebaseFirestore.instance.collection('notifications').add({
-        'notification': _questionController.text,
-        'questions': options,
-        'answers': [], // Empty answers list
-        'timestamp': DateTime.now()
-      }).then((value) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Question saved successfully!')),
-        );
-        // Clear fields and options list
-        setState(() {
-          _questionController.clear();
-          _optionController.clear();
-          options.clear();
-        });
-      }).catchError((error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save question: $error')),
-        );
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please enter a question and at least two options')),
-      );
-    }
   }
 }

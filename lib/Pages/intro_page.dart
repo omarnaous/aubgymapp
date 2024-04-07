@@ -1,5 +1,6 @@
 import 'package:aub_gymsystem/Pages/sign_in.dart';
 import 'package:aub_gymsystem/Pages/sign_up.dart';
+import 'package:aub_gymsystem/Widgets/sign_inbtn.dart';
 import 'package:aub_gymsystem/constants.dart';
 import 'package:flutter/material.dart';
 
@@ -13,145 +14,105 @@ class IntroPage extends StatefulWidget {
 class _IntroPageState extends State<IntroPage> {
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Stack(
         children: [
-          Column(
-            children: [
-              Expanded(
-                child: Image.asset(
-                  ConstantsClass.aubImageLink,
-                  fit: BoxFit.cover,
-                ),
-              )
-            ],
+          SizedBox(
+            width: width,
+            child: Image.asset(
+              ConstantsClass.aubImageLink,
+              fit: BoxFit.fitWidth,
+            ),
           ),
           SafeArea(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                          height: height * 0.18,
-                          child: Image.asset(ConstantsClass.aubLogoLink)),
-                    ],
-                  ),
+                Image.asset(
+                  ConstantsClass.aubLogoLink,
+                  fit: BoxFit.fitWidth,
                 ),
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Center(
-                        child: Text(
-                          "NO MORE EXCUSES!",
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "NO MORE EXCUSES!",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: ConstantsClass.themeColor,
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(5.0),
+                          child: Text(
+                            "DO IT NOW",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.65),
+                        ),
+                        child: const Text(
+                          "Join us to reach your goals with expert trainers and personalized workouts that guarantee results!",
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 30,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: ConstantsClass.themeColor,
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(5.0),
-                              child: Text(
-                                "DO IT NOW",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                              left: width * 0.07, top: 8, right: width * 0.07),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey.withOpacity(0.65),
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(5.0),
-                              child: Text(
-                                "Achieve your fitness goals with our expert trainers! Join us for personalized workouts that get results",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (BuildContext context) {
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CustomElevatedButton(
+                      buttonText: "SIGN IN",
+                      size: 18,
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (BuildContext context) {
                               return const SignInPage();
-                            }));
-                          },
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: ConstantsClass.themeColor),
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              "SIGN IN",
-                              style:
-                                  TextStyle(fontSize: 22, color: Colors.white),
-                            ),
+                            },
                           ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (BuildContext context) {
+                        );
+                      },
+                    ),
+                    CustomElevatedButton(
+                      size: 25,
+                      buttonText: "SIGN UP",
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (BuildContext context) {
                               return const SignUpPage();
-                            }));
-                          },
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: ConstantsClass.themeColor),
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              "SIGN UP",
-                              style:
-                                  TextStyle(fontSize: 30, color: Colors.white),
-                            ),
+                            },
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
+                        );
+                      },
+                    )
+                  ],
                 )
               ],
             ),

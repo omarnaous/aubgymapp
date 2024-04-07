@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:aub_gymsystem/Logic/firebasehelper_class.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -6,11 +6,11 @@ class NotificationPage extends StatefulWidget {
   const NotificationPage({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _NotificationPageState createState() => _NotificationPageState();
 }
 
 class _NotificationPageState extends State<NotificationPage> {
-  final TextEditingController _answerController = TextEditingController();
   String? selectedRadioTile;
 
   @override
@@ -42,7 +42,6 @@ class _NotificationPageState extends State<NotificationPage> {
               DocumentSnapshot<Map<String, dynamic>> document =
                   snapshot.data!.docs[index];
               Map<String, dynamic> data = document.data()!;
-              print(data["questions"]);
 
               return Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -80,7 +79,13 @@ class _NotificationPageState extends State<NotificationPage> {
                             ElevatedButton(
                               onPressed: () {
                                 // Save the answer to Firestore
-                                saveAnswer(document.id, selectedRadioTile);
+                                FirebaseHelperClass().saveNotificationAnswer(
+                                    document.id, selectedRadioTile, context,
+                                    () {
+                                  setState(() {
+                                    selectedRadioTile = null;
+                                  });
+                                });
                               },
                               child: const Text('Submit'),
                             ),
@@ -96,52 +101,5 @@ class _NotificationPageState extends State<NotificationPage> {
         },
       ),
     );
-  }
-
-  void saveAnswer(String documentId, String? answer) {
-    if (answer != null) {
-      // Get the current list of answers from Firestore
-      FirebaseFirestore.instance
-          .collection('notifications')
-          .doc(documentId)
-          .get()
-          .then((DocumentSnapshot<Map<String, dynamic>> documentSnapshot) {
-        if (documentSnapshot.exists) {
-          List<Map<String, dynamic>> answers = List<Map<String, dynamic>>.from(
-              documentSnapshot['answers'] ?? []);
-
-          // Add the user's answer to the list
-          answers.add({
-            'userUid': FirebaseAuth.instance.currentUser?.uid,
-            'answer': answer,
-          });
-
-          // Update the document with the new list of answers
-          FirebaseFirestore.instance
-              .collection('notifications')
-              .doc(documentId)
-              .update({
-            'answers': answers,
-          }).then((value) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Answer saved successfully!')),
-            );
-            setState(() {
-              selectedRadioTile = null;
-            });
-          }).catchError((error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to save answer: $error')),
-            );
-          });
-        }
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _answerController.dispose();
-    super.dispose();
   }
 }

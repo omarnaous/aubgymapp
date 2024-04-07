@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class PersonalTrainerReservationPanel extends StatefulWidget {
-  const PersonalTrainerReservationPanel({Key? key});
+  const PersonalTrainerReservationPanel({Key? key}) : super(key: key);
 
   @override
   State<PersonalTrainerReservationPanel> createState() =>
@@ -23,7 +23,6 @@ class _PersonalTrainerReservationPanelState
       // Show snackbar or toast indicating successful cancellation
     } catch (error) {
       // Handle error
-      print('Error cancelling reservation: $error');
     }
   }
 

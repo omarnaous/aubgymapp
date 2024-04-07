@@ -16,6 +16,99 @@ class FirebaseHelperClass {
   final Stream<QuerySnapshot<Map<String, dynamic>>> reservationsSnapshots =
       FirebaseFirestore.instance.collection('reservations').snapshots();
 
+  void saveNotificationAnswer(String documentId, String? answer,
+      BuildContext context, Function switchRadioTile) {
+    if (answer != null) {
+      // Get the current list of answers from Firestore
+      FirebaseFirestore.instance
+          .collection('notifications')
+          .doc(documentId)
+          .get()
+          .then((DocumentSnapshot<Map<String, dynamic>> documentSnapshot) {
+        if (documentSnapshot.exists) {
+          List<Map<String, dynamic>> answers = List<Map<String, dynamic>>.from(
+              documentSnapshot['answers'] ?? []);
+
+          // Add the user's answer to the list
+          answers.add({
+            'userUid': FirebaseAuth.instance.currentUser?.uid,
+            'answer': answer,
+          });
+
+          // Update the document with the new list of answers
+          FirebaseFirestore.instance
+              .collection('notifications')
+              .doc(documentId)
+              .update({
+            'answers': answers,
+          }).then((value) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Answer saved successfully!')),
+            );
+            switchRadioTile();
+          }).catchError((error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to save answer: $error')),
+            );
+          });
+        }
+      });
+    }
+  }
+
+  void submitComplaint(
+    TextEditingController complaintController,
+    BuildContext context,
+  ) async {
+    String complaint = complaintController.text.trim();
+    if (complaint.isNotEmpty) {
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+      Map<String, dynamic> data = {
+        'userId': userId,
+        'complaint': complaint,
+        'timestamp': FieldValue.serverTimestamp(),
+      };
+      try {
+        await FirebaseFirestore.instance.collection('complaints').add(data);
+        complaintController.clear();
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Complaint submitted successfully!'),
+          ),
+        );
+      } catch (error) {
+        if (kDebugMode) {
+          print('Error submitting complaint: $error');
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content:
+                Text('Error submitting complaint. Please try again later.'),
+          ),
+        );
+      }
+    } else {
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            title: const Text('Error'),
+            content: const Text('Please enter a complaint before submitting.'),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   void deleteAccountPrompt(BuildContext context) {
     showDialog(
       context: context,

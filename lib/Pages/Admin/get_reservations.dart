@@ -20,6 +20,11 @@ class _AllUsersReservationsState extends State<AllUsersReservations> {
     _reservationsStream = FirebaseHelperClass().reservationsSnapshots;
   }
 
+  bool _filterUser(String userName) {
+    return _filterText.isEmpty ||
+        userName.toLowerCase().contains(_filterText.toLowerCase());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,10 +127,5 @@ class _AllUsersReservationsState extends State<AllUsersReservations> {
         ],
       ),
     );
-  }
-
-  bool _filterUser(String userName) {
-    return _filterText.isEmpty ||
-        userName.toLowerCase().contains(_filterText.toLowerCase());
   }
 }
