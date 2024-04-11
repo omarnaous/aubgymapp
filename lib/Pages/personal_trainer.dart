@@ -1,4 +1,4 @@
-import 'package:aub_gymsystem/Pages/gym_reserve.dart';
+import 'package:aub_gymsystem/Pages/reserve_session.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -75,9 +75,8 @@ class _TrainersPageState extends State<TrainersPage> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (BuildContext context) {
-          return ReservationPage(
-            reservationType: trainerName,
-            trainerUid: trainerUid,
+          return ReserveSession(
+            uid: trainerUid,
           );
         },
       ),

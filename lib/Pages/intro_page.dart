@@ -83,12 +83,12 @@ class _IntroPageState extends State<IntroPage> {
                     ),
                   ],
                 ),
-                Row(
+                Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CustomElevatedButton(
                       buttonText: "SIGN IN",
-                      size: 18,
+                      size: 25,
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -100,7 +100,7 @@ class _IntroPageState extends State<IntroPage> {
                       },
                     ),
                     CustomElevatedButton(
-                      size: 25,
+                      size: 18,
                       buttonText: "SIGN UP",
                       onPressed: () {
                         Navigator.of(context).push(

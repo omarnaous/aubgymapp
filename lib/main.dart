@@ -36,7 +36,9 @@ class MyApp extends StatelessWidget {
           if (snapshot.hasData) {
             if (snapshot.data?.emailVerified == false &&
                 snapshot.data?.email != 'aubadmin@gmail.com' &&
-                snapshot.data?.email != 'omarnaous145@gmail.com') {
+                snapshot.data?.email != 'teststudent@gmail.com' &&
+                snapshot.data?.email != 'ahmadpt@gmail.com' &&
+                snapshot.data?.email != 'nicolas@aub.com') {
               return const VerificationPage();
             }
 

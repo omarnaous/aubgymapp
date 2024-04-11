@@ -1,3 +1,4 @@
+import 'package:aub_gymsystem/Pages/Admin/all_classes_list.dart';
 import 'package:aub_gymsystem/Pages/Admin/pt_reservations.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -39,7 +40,7 @@ class _ProfilePageState extends State<ProfilePage> {
     "Complaints",
     "Send Notifications",
     "Schedule Class",
-    // "Add Trainer",
+    "Unlock Class Users",
   ];
   final List<IconData> adminIcons = const [
     Icons.calendar_today,
@@ -47,7 +48,7 @@ class _ProfilePageState extends State<ProfilePage> {
     Icons.message,
     Icons.notifications_active,
     Icons.schedule,
-    // Icons.person_add,
+    Icons.person_add,
   ];
 
   @override
@@ -120,10 +121,11 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               if (userClassModel.role == "personal trainer")
                 const UserProfileWidgets(
-                  icons: [Icons.calendar_month],
-                  widgetTitles: ["Reservations"],
+                  icons: [Icons.calendar_month, Icons.edit_calendar_rounded],
+                  widgetTitles: ["Reservations", 'Schedule My Sessions'],
                   navigationWidget: [
                     PersonalTrainerReservationPanel(),
+                    ScheduleClassorSession(istrainer: true)
                   ],
                   isUser: false,
                 )
@@ -132,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   icons: [Icons.calendar_month],
                   widgetTitles: ["My Classes"],
                   navigationWidget: [
-                    ScheduleClass(),
+                    ScheduleClassorSession(istrainer: false),
                   ],
                   isUser: false,
                 )
@@ -156,7 +158,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     ManageUsersPage(),
                     GetComplaintsPage(),
                     SendNotificationsPage(),
-                    ScheduleClass(),
+                    ScheduleClassorSession(istrainer: false),
+                    AllClassList()
                     // AddTrainerPage(),
                   ],
                   isUser: false,

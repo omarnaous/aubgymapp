@@ -307,23 +307,32 @@ class FirebaseHelperClass {
   Future<void> addClass(
       BuildContext context,
       TextEditingController classNameController,
-      DateTime selectedDate,
+      DateTime startDate,
+      DateTime endDate,
       TimeOfDay selectedStartTime,
-      TimeOfDay selectedEndTime) async {
+      TimeOfDay selectedEndTime,
+      String collectionName,
+      List<String> repeatedDays,
+      String instructorId,
+      String instructorName) async {
     try {
       if (classNameController.text.isNotEmpty) {
-        await FirebaseFirestore.instance.collection('classes').add(
+        await FirebaseFirestore.instance.collection(collectionName).add(
           {
             'className': classNameController.text,
-            'date': selectedDate,
-            'startTime':
-                'From ${selectedStartTime.format(context)} to ${selectedEndTime.format(context)} ',
-            'instructorId': FirebaseAuth.instance.currentUser?.uid
+            'startDate': startDate,
+            'endDate': endDate,
+            'startTime': selectedStartTime.format(context),
+            'endTime': selectedEndTime.format(context),
+            'repeatedDays': repeatedDays, // Add recurrence rule here
+            'instructorId': instructorId,
+            'unlockedUsers': [],
+            'classInstructor': instructorName
           },
         );
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Class Added successfully')),
+          const SnackBar(content: Text('Data added successfully')),
         );
         classNameController.clear();
       } else {

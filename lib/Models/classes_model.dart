@@ -1,37 +1,42 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ClassesModel {
   final String className;
-  final String classTime;
-  final Timestamp date;
-  final List? attendees;
+  final Timestamp startDate;
+  final Timestamp endDate;
+  final String startTime;
+  final String endTime;
+  final List<String> repeatedDays;
+  final String instructorId;
+  final List reservations;
+  final List unlockedUsers;
+  final String classInstructor;
 
   ClassesModel({
     required this.className,
-    required this.classTime,
-    required this.date,
-    required this.attendees, // Include attendees in the constructor
+    required this.startDate,
+    required this.endDate,
+    required this.startTime,
+    required this.endTime,
+    required this.repeatedDays,
+    required this.instructorId,
+    required this.reservations,
+    required this.unlockedUsers,
+    required this.classInstructor,
   });
 
-  factory ClassesModel.fromJson(Map<String, dynamic> json) {
-    // Convert attendees from dynamic to List<String>
-
+  factory ClassesModel.fromMap(Map<String, dynamic> map) {
     return ClassesModel(
-      className: json['className'],
-      classTime: json['startTime'],
-      date: json['date'],
-      attendees: json["attendees"] ?? [],
-    );
-  }
-
-  String formatDate() {
-    // Convert timestamp to DateTime
-    DateTime dateTime = date.toDate();
-
-    // Format DateTime to desired format: day.month/year
-    String formattedDate =
-        '${dateTime.day.toString().padLeft(2, '0')}.${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year}';
-
-    return formattedDate;
+        className: map['className'],
+        startDate: map['startDate'] ?? Timestamp.now(),
+        endDate: map['endDate'] ?? Timestamp.now(),
+        startTime: map['startTime'] ?? '',
+        endTime: map['endTime'] ?? '',
+        repeatedDays: List<String>.from(map['repeatedDays'] ?? []),
+        instructorId: map['instructorId'] ?? '',
+        reservations: map['reservations'] ?? [],
+        unlockedUsers: map['unlockedUsers'] ?? [],
+        classInstructor: map['classInstructor'] ?? '');
   }
 }

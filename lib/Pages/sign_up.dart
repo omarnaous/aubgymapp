@@ -99,12 +99,14 @@ class _SignUpPageState extends State<SignUpPage> {
     String email = emailController.text;
     String phoneNumber = phoneNumberController.text;
     String password = passwordController.text;
+    String studentId = studentIdController.text;
 
     if (firstName.isEmpty ||
         lastName.isEmpty ||
         email.isEmpty ||
         phoneNumber.isEmpty ||
-        password.isEmpty) {
+        password.isEmpty ||
+        studentId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: ConstantsClass.themeColor,
@@ -126,7 +128,7 @@ class _SignUpPageState extends State<SignUpPage> {
           lastName: lastName,
           email: email,
           phoneNumber: phoneNumber,
-          studentId: isGuest ? studentIdController.text : '',
+          studentId: studentIdController.text,
           password: password,
           locked: roles[selectedIndex] == "Student" ? false : true,
           role: roles[selectedIndex].toLowerCase(),
@@ -141,6 +143,7 @@ class _SignUpPageState extends State<SignUpPage> {
         });
         buttonController.success();
         buttonController.reset();
+        // ignore: use_build_context_synchronously
         Navigator.of(context).pop();
       } catch (error) {
         buttonController.reset();
