@@ -1,6 +1,9 @@
 import 'package:aub_gymsystem/Pages/Admin/all_classes_list.dart';
 import 'package:aub_gymsystem/Pages/Admin/pt_reservations.dart';
 import 'package:aub_gymsystem/Pages/class_useractive.dart';
+import 'package:aub_gymsystem/Pages/home_page.dart';
+import 'package:aub_gymsystem/Pages/intro_page.dart';
+import 'package:aub_gymsystem/Pages/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -150,6 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     MyReservations(),
                     UserClassesReserved(),
                     ComplaintsPage(),
+                    MainPage()
                   ],
                   isUser: true,
                 )
