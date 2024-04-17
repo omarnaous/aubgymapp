@@ -1,5 +1,6 @@
 import 'package:aub_gymsystem/Pages/Admin/all_classes_list.dart';
 import 'package:aub_gymsystem/Pages/Admin/pt_reservations.dart';
+import 'package:aub_gymsystem/Pages/class_useractive.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,10 +27,12 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final List<String> widgetTitles = [
     "My Reservations",
+    'Classes\nReservations',
     "Complaints",
     "Change Password",
   ];
   final List<IconData> icons = const [
+    Icons.calendar_today,
     Icons.calendar_today,
     Icons.message,
     Icons.lock,
@@ -145,6 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   widgetTitles: widgetTitles,
                   navigationWidget: const [
                     MyReservations(),
+                    UserClassesReserved(),
                     ComplaintsPage(),
                   ],
                   isUser: true,

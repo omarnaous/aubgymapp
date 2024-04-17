@@ -1,4 +1,4 @@
-import 'package:aub_gymsystem/constants.dart';
+import 'package:aub_gymsystem/Models/session_model.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,18 +13,19 @@ class PersonalTrainerReservationPanel extends StatefulWidget {
 
 class _PersonalTrainerReservationPanelState
     extends State<PersonalTrainerReservationPanel> {
-  // Function to update reservation status to cancelled
-  Future<void> cancelReservation(String reservationId) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('reservations')
-          .doc(reservationId)
-          .update({'active': false});
-      // Show snackbar or toast indicating successful cancellation
-    } catch (error) {
-      // Handle error
-    }
+  String? selectedDocId;
+  int? selectedSessionId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize selectedDocId and selectedSessionId
+    selectedDocId = '';
+    selectedSessionId = 0;
   }
+
+  // Function to update reservation status to cancelled
+  Future<void> cancelReservation(String docId) async {}
 
   @override
   Widget build(BuildContext context) {
@@ -32,14 +33,13 @@ class _PersonalTrainerReservationPanelState
       appBar: AppBar(
         title: const Text('Personal Trainer Reservations'),
       ),
-      body: StreamBuilder<QuerySnapshot>(
+      body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('reservations')
-            .where('trainerId',
-                isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-            .where('active', isEqualTo: true) // Filter active reservations
+            .collection('trainers')
+            .doc(FirebaseAuth.instance.currentUser
+                ?.uid) // Document ID is the current user's UID
             .snapshots(),
-        builder: (context, snapshot) {
+        builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
@@ -50,46 +50,86 @@ class _PersonalTrainerReservationPanelState
               child: Text('Error: ${snapshot.error}'),
             );
           }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          if (!snapshot.hasData || !snapshot.data!.exists) {
             return const Center(
               child: Text('No active reservations found.'),
             );
           }
-          // If there are reservations, display them
+
+          Map<String, dynamic> data =
+              snapshot.data?.data() as Map<String, dynamic>;
+          List sessions = data["sessions"];
+
           return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
+            itemCount: sessions.length,
             itemBuilder: (context, index) {
-              var reservation = snapshot.data!.docs[index];
+              SessionModel sessionModel = SessionModel.fromMap(sessions[index]);
 
-              String clientName = reservation['name'];
-              String reservationId = reservation.id;
+              if (sessionModel.reserved == true) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Card(
+                    child: ListTile(
+                      title: Text(sessionModel.sessionName,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          StreamBuilder<DocumentSnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(sessionModel
+                                    .reservedBy) // User ID from sessionModel
+                                .snapshots(),
+                            builder: (context,
+                                AsyncSnapshot<DocumentSnapshot> userSnapshot) {
+                              if (userSnapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Text(
+                                    'Loading...'); // Show loading indicator
+                              }
+                              if (!userSnapshot.hasData ||
+                                  !userSnapshot.data!.exists) {
+                                return const Text(
+                                    'User not found'); // Show message if user not found
+                              }
 
-              Timestamp reservationDate = reservation['date'] as Timestamp;
+                              // Extract user data from snapshot
+                              Map<String, dynamic> userData = userSnapshot.data
+                                  ?.data() as Map<String, dynamic>;
 
-              // Convert Timestamp to DateTime
-              DateTime dateTime = reservationDate.toDate();
+                              // Display user information
+                              return Text(
+                                  'Reserved by ${userData['firstName']} ${userData['lastName']}');
+                            },
+                          ),
+                          Text(
+                            'Date: ${sessionModel.formattedDate()}',
+                          ),
+                          Text(
+                            'Time: ${sessionModel.startTime} - ${sessionModel.endTime}',
+                          ),
+                        ],
+                      ),
+                      trailing: ElevatedButton(
+                        onPressed: () {
+                          sessions[index]["reserved"] = false;
+                          sessions[index]["reservedBy"] = null;
 
-              // Format date as day/month/year
-              String formattedDate =
-                  '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${ConstantsClass.timeSlots[reservation["time"]]}';
+                          FirebaseFirestore.instance
+                              .collection('trainers')
+                              .doc(snapshot.data?.id)
+                              .update({'sessions': sessions});
 
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Card(
-                  child: ListTile(
-                    title: Text(clientName),
-                    subtitle: Text(formattedDate),
-                    trailing: ElevatedButton(
-                      onPressed: () {
-                        // Call function to cancel reservation
-
-                        cancelReservation(reservationId);
-                      },
-                      child: const Text('Cancel'),
+                          // Call function to cancel reservation
+                          // cancelReservation(sessionModel.id);
+                        },
+                        child: const Text('Cancel'),
+                      ),
                     ),
                   ),
-                ),
-              );
+                );
+              }
             },
           );
         },

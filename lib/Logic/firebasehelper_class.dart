@@ -332,7 +332,10 @@ class FirebaseHelperClass {
         );
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Data added successfully')),
+          const SnackBar(
+            content: Text('Class added successfully'),
+            backgroundColor: Colors.green,
+          ),
         );
         classNameController.clear();
       } else {

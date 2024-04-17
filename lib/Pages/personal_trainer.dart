@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TrainersPage extends StatefulWidget {
-  const TrainersPage({Key? key});
+  const TrainersPage({Key? key}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -11,8 +11,8 @@ class TrainersPage extends StatefulWidget {
 }
 
 class _TrainersPageState extends State<TrainersPage> {
-  late String _selectedTrainer = '';
-  late String _selectedTrainerUid = '';
+  late String selectedTrainer = '';
+  late String selectedTrainerUid = '';
 
   @override
   Widget build(BuildContext context) {
@@ -35,15 +35,28 @@ class _TrainersPageState extends State<TrainersPage> {
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Card(
-                  child: RadioListTile<String>(
-                    title: Text(trainers[index]['name']),
-                    value: trainers[index]['name'],
-                    groupValue: _selectedTrainer,
-                    onChanged: (String? value) {
-                      setState(() {
-                        _selectedTrainer = value!;
-                        _selectedTrainerUid = trainers[index]["userId"]!;
-                      });
+                  child: ListTile(
+                    title: Text(
+                      trainers[index]['name'],
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: const Text(
+                      "View Available Sessions",
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    trailing: IconButton(
+                        onPressed: () {
+                          navigatetoReservePage(
+                            context,
+                            trainers[index]['name'],
+                            trainers[index]["userId"]!,
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_forward_ios_rounded)),
+                    onTap: () {
+                      // Navigate to reserve session page
+                      navigatetoReservePage(context, trainers[index]['name'],
+                          trainers[index]["userId"]!);
                     },
                   ),
                 ),
@@ -52,30 +65,16 @@ class _TrainersPageState extends State<TrainersPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_selectedTrainer.isNotEmpty) {
-            // Perform reservation action with selected trainer
-            navigatetoReservePage(
-                context, _selectedTrainer, _selectedTrainerUid);
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text('Please select a trainer to reserve.'),
-            ));
-          }
-        },
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
-  // Function to reserve the selected trainer
+  // Function to navigate to the reserve session page
   void navigatetoReservePage(
       BuildContext context, String trainerName, String trainerUid) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (BuildContext context) {
-          return ReserveSession(
+          return ReserverTrainerSession(
             uid: trainerUid,
           );
         },

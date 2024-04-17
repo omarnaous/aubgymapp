@@ -1,24 +1,27 @@
+import 'package:aub_gymsystem/Models/session_model.dart';
+import 'package:aub_gymsystem/Widgets/gym_calendar.dart';
 import 'package:aub_gymsystem/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-import 'package:aub_gymsystem/Models/classes_model.dart';
-
-class ReserveSession extends StatefulWidget {
+class ReserverTrainerSession extends StatefulWidget {
   final String uid;
 
-  const ReserveSession({
+  const ReserverTrainerSession({
     Key? key,
     required this.uid,
   }) : super(key: key);
 
   @override
-  State<ReserveSession> createState() => _ReserveSessionState();
+  State<ReserverTrainerSession> createState() => _ReserverTrainerSessionState();
 }
 
-class _ReserveSessionState extends State<ReserveSession> {
-  String? selectedSessionId;
+class _ReserverTrainerSessionState extends State<ReserverTrainerSession> {
+  int? selectedSessionId;
+  String? selectedDocId;
+  SessionModel? selectedSessionModel;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -32,25 +35,68 @@ class _ReserveSessionState extends State<ReserveSession> {
             ConstantsClass.reserve,
             fit: BoxFit.cover,
           ),
-          onPressed: () {
-            // FirebaseHelperClass()
-            //     .postReservation(
-            //   context: context,
-            //   date: selectedDate,
-            //   index: selectedValue!,
-            //   name: widget.reservationType ?? "Gym Reservation",
-            //   trainerId: widget.trainerUid,
-            // )
-            //     .whenComplete(() {
-            //   FirebaseHelperClass().showReservationDialog(context, selectedDate,
-            //       selectedValue!, "has been successfully submitted");
-            // });
+          onPressed: () async {
+            if (selectedSessionModel != null && selectedDocId != null) {
+              try {
+                FirebaseFirestore.instance
+                    .collection('trainers')
+                    .doc(selectedDocId)
+                    .get()
+                    .then((value) {
+                  List sessions = value.data()?["sessions"];
+
+                  // Check if selectedSessionId is valid and within the range of sessions
+                  if (selectedSessionId != null &&
+                      selectedSessionId! < sessions.length) {
+                    // Update the session data
+                    sessions[selectedSessionId!]['reserved'] = true;
+                    sessions[selectedSessionId!]['reservedby'] =
+                        FirebaseAuth.instance.currentUser?.uid;
+
+                    // Update the sessions data in Firestore
+                    FirebaseFirestore.instance
+                        .collection('trainers')
+                        .doc(selectedDocId)
+                        .update({'sessions': sessions}).then((_) {
+                      // Optionally, you can show a success message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Session Reserved successfully'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }).catchError((error) {
+                      // Show a snackbar with the error message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: $error'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    });
+                  } else {
+                    // Show a snackbar indicating invalid session selection
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Invalid session selection'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                });
+              } catch (error) {
+                // Show a snackbar with the error message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error: $error'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
           }),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('sessions')
-            .where('instructorId', isEqualTo: widget.uid)
-            .snapshots(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('trainers').snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -60,49 +106,78 @@ class _ReserveSessionState extends State<ReserveSession> {
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
-                child: Text('No sessions found for this user.'));
+              child: Text('No sessions found.'),
+            );
           }
-          return Container();
 
-          // return Column(
-          //   children: snapshot.data!.docs.map((DocumentSnapshot session) {
-          //     ClassesModel classesModel =
-          //         ClassesModel.fromJson(session.data() as Map<String, dynamic>);
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: GymCalendar(
+                  selectedDate: _selectedDate,
+                  onSelection: (date) {
+                    setState(() {
+                      _selectedDate = date;
+                    });
+                  },
+                ),
+              ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    final DocumentSnapshot trainerDoc =
+                        snapshot.data!.docs[index];
+                    final Map<String, dynamic> trainerData =
+                        trainerDoc.data() as Map<String, dynamic>;
+                    final List<dynamic> sessions = trainerData['sessions'];
 
-          //     DateTime getDateOnlyFromTimestamp(Timestamp timestamp) {
-          //       DateTime dateTime = timestamp.toDate();
-          //       return DateTime(dateTime.year, dateTime.month, dateTime.day);
-          //     }
+                    final SessionModel sessionModel =
+                        SessionModel.fromMap(sessions[index]);
 
-          //     // Function to format DateTime to string with date, month, and year
-          //     String formatDate(DateTime dateTime) {
-          //       DateFormat formatter = DateFormat('dd/MM/yyyy');
-          //       return formatter.format(dateTime);
-          //     }
-
-          //     // Use session data to build UI components
-          //     return Padding(
-          //       padding: const EdgeInsets.all(8.0),
-          //       child: Card(
-          //         child: RadioListTile<String>(
-          //           title: Text(classesModel.className),
-          //           subtitle: Text(
-          //             formatDate(
-          //               getDateOnlyFromTimestamp(classesModel.date),
-          //             ),
-          //           ),
-          //           value: session.id,
-          //           groupValue: selectedSessionId,
-          //           onChanged: (value) {
-          //             setState(() {
-          //               selectedSessionId = value;
-          //             });
-          //           },
-          //         ),
-          //       ),
-          //     );
-          //   }).toList(),
-          // );
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(
+                        child: RadioListTile<int>(
+                          title: Text(
+                            sessionModel.sessionName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: sessionModel.reserved ?? false
+                                  ? Colors.grey
+                                  : Colors.black,
+                            ),
+                          ),
+                          value: index,
+                          groupValue: selectedSessionId,
+                          subtitle: Text(
+                            'From ${sessionModel.startTime} till ${sessionModel.endTime}${sessionModel.reserved ?? false ? '\nSession Reserved' : ''}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: sessionModel.reserved ?? false
+                                  ? Colors.grey
+                                  : Colors.black,
+                            ),
+                          ),
+                          onChanged: sessionModel.reserved ?? false
+                              ? null
+                              : (int? value) {
+                                  setState(() {
+                                    selectedDocId = trainerDoc.id;
+                                    selectedSessionId = value;
+                                    selectedSessionModel = sessionModel;
+                                  });
+                                },
+                          activeColor: ConstantsClass.secondaryColor,
+                          controlAffinity: ListTileControlAffinity.trailing,
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: snapshot.data!.docs.length,
+                ),
+              ),
+            ],
+          );
         },
       ),
     );
