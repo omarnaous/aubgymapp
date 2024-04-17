@@ -15,7 +15,6 @@ class _UserClassesReservedState extends State<UserClassesReserved> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Class Reservations"),
-        actions: [],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('classes').snapshots(),

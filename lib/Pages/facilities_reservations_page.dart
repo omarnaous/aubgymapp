@@ -110,6 +110,7 @@ class _FacilitiesReservationPageState extends State<FacilitiesReservationPage> {
                       selectedDate,
                       selectedValue!,
                       "has been successfully submitted");
+                  Navigator.of(context).pop();
                 },
               );
             } else {

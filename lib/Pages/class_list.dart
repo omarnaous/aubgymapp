@@ -1,5 +1,4 @@
 import 'package:aub_gymsystem/Models/classes_model.dart';
-import 'package:aub_gymsystem/Models/user_model.dart';
 import 'package:aub_gymsystem/Widgets/gym_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
