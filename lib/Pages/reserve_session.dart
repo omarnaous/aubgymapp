@@ -29,11 +29,16 @@ class _ReserverTrainerSessionState extends State<ReserverTrainerSession> {
       appBar: AppBar(
         title: const Text('Reserve Session'),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
           backgroundColor: ConstantsClass.secondaryColor,
-          child: Image.asset(
-            ConstantsClass.reserve,
-            fit: BoxFit.cover,
+          icon: const Icon(Icons.calendar_month),
+          label: const Text(
+            "Reserve",
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              color: Colors.black,
+            ),
           ),
           onPressed: () async {
             if (selectedSessionModel != null && selectedDocId != null) {

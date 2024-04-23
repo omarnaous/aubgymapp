@@ -1,5 +1,6 @@
 import 'package:aub_gymsystem/Models/classes_model.dart';
 import 'package:aub_gymsystem/Widgets/gym_calendar.dart';
+import 'package:aub_gymsystem/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -177,11 +178,14 @@ class _ClassListState extends State<ClassList> {
             );
           }
         },
+        backgroundColor: ConstantsClass.secondaryColor,
+        icon: const Icon(Icons.calendar_month),
         label: const Text(
-          "Reserve Class",
+          "Reserve",
           style: TextStyle(
+            fontWeight: FontWeight.w700,
             fontSize: 18,
-            fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
       ),

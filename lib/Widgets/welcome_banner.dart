@@ -30,18 +30,17 @@ class _WelcomeUserBannerState extends State<WelcomeUserBanner> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color:
-                      ConstantsClass.secondaryColor, // Set border color to red
-                  width: 2, // Set border width
+                  color: ConstantsClass.secondaryColor,
+                  width: 2,
                 ),
-                color: Colors.grey, // Set background color to grey
+                color: Colors.grey,
               ),
               child: const CircleAvatar(
                 backgroundColor: Colors.white54,
                 radius: 25,
                 child: Icon(
                   Icons.person,
-                ), // Placeholder if no profile picture
+                ),
               ),
             ),
           ),
@@ -60,7 +59,7 @@ class _WelcomeUserBannerState extends State<WelcomeUserBanner> {
                       fontWeight: FontWeight.bold,
                       fontSize: 22,
                     ),
-                  ), // Display user's full name
+                  ),
                   Text(
                     "ID: ${widget.userID}",
                     maxLines: 1,
@@ -70,15 +69,17 @@ class _WelcomeUserBannerState extends State<WelcomeUserBanner> {
                       fontSize: 16,
                     ),
                   ),
-                  Text(
-                    "Expiry Date: ${widget.date}",
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
+                  if (widget
+                      .date.isNotEmpty) // Conditionally render the expiry date
+                    Text(
+                      "Expiry Date: ${widget.date}",
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

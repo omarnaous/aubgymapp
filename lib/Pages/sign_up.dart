@@ -8,6 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rounded_loading_button/rounded_loading_button.dart';
 
+enum Gender { Male, Female, Other }
+
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
 
@@ -151,6 +153,8 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
+  Gender? selectedGender = Gender.Male;
+
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
@@ -235,6 +239,45 @@ class _SignUpPageState extends State<SignUpPage> {
                         labelText: 'Password',
                       ),
                     ),
+                  ),
+                  SizedBox(
+                    height: height * 0.05,
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Radio<Gender>(
+                        value: Gender.Male,
+                        groupValue: selectedGender,
+                        onChanged: (Gender? value) {
+                          setState(() {
+                            selectedGender = value;
+                          });
+                        },
+                      ),
+                      const Text(
+                        'Male',
+                        style: TextStyle(
+                          fontSize: 18, // Set the desired font size here
+                        ),
+                      ),
+                      Radio<Gender>(
+                        value: Gender.Female,
+                        groupValue: selectedGender,
+                        onChanged: (Gender? value) {
+                          setState(() {
+                            selectedGender = value;
+                          });
+                        },
+                      ),
+                      const Text(
+                        'Female',
+                        style: TextStyle(
+                          fontSize: 18, // Set the desired font size here
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(
                     height: height * 0.05,

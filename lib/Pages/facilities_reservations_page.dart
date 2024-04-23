@@ -87,12 +87,17 @@ class _FacilitiesReservationPageState extends State<FacilitiesReservationPage> {
       appBar: AppBar(
         title: Text("${widget.facilityName} Reservation"),
       ),
-      floatingActionButton: FloatingActionButton(
-          backgroundColor: ConstantsClass.secondaryColor,
-          child: Image.asset(
-            ConstantsClass.reserve,
-            fit: BoxFit.cover,
+      floatingActionButton: FloatingActionButton.extended(
+          icon: const Icon(Icons.calendar_month),
+          label: const Text(
+            "Reserve",
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              color: Colors.black,
+            ),
           ),
+          backgroundColor: ConstantsClass.secondaryColor,
           onPressed: () {
             if (spots[selectedValue!] > 0) {
               FirebaseHelperClass()
@@ -105,11 +110,18 @@ class _FacilitiesReservationPageState extends State<FacilitiesReservationPage> {
               )
                   .whenComplete(
                 () {
-                  FirebaseHelperClass().showReservationDialog(
-                      context,
-                      selectedDate,
-                      selectedValue!,
-                      "has been successfully submitted");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        "Reserved Successfully",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
                   Navigator.of(context).pop();
                 },
               );

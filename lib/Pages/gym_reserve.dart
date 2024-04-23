@@ -100,34 +100,47 @@ class _ReservationPageState extends State<ReservationPage> {
       appBar: AppBar(
         title: const Text("Reservation"),
       ),
-      floatingActionButton: FloatingActionButton(
-          backgroundColor: ConstantsClass.secondaryColor,
-          child: Image.asset(
-            ConstantsClass.reserve,
-            fit: BoxFit.cover,
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: ConstantsClass.secondaryColor,
+        icon: const Icon(Icons.calendar_month),
+        label: const Text(
+          "Reserve",
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+            color: Colors.black,
           ),
-          onPressed: () {
-            if (spots[selectedValue!] > 0) {
-              FirebaseHelperClass()
-                  .postReservation(
-                context: context,
-                date: selectedDate,
-                index: selectedValue!,
-                name: widget.reservationType ?? "Gym Reservation",
-                trainerId: widget.trainerUid,
-              )
-                  .whenComplete(() {
-                FirebaseHelperClass().showReservationDialog(
-                    context,
-                    selectedDate,
-                    selectedValue!,
-                    "has been successfully submitted");
-              });
-            } else {
-              FirebaseHelperClass().showReservationDialog(
-                  context, selectedDate, selectedValue!, "is fully booked");
-            }
-          }),
+        ),
+        onPressed: () {
+          if (spots[selectedValue!] > 0) {
+            FirebaseHelperClass()
+                .postReservation(
+              context: context,
+              date: selectedDate,
+              index: selectedValue!,
+              name: widget.reservationType ?? "Gym Reservation",
+              trainerId: widget.trainerUid,
+            )
+                .whenComplete(() {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "Reserved Successfully",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            });
+          } else {
+            FirebaseHelperClass().showReservationDialog(
+                context, selectedDate, selectedValue!, "is fully booked");
+          }
+        },
+      ),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
