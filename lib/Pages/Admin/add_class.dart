@@ -71,211 +71,215 @@ class _ScheduleClassorSessionState extends State<ScheduleClassorSession> {
           ),
           body: Padding(
             padding: const EdgeInsets.all(3),
-            child: Column(
-              mainAxisAlignment: widget.istrainer == false
-                  ? MainAxisAlignment.spaceBetween
-                  : MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    controller: _classNameController,
-                    decoration: InputDecoration(
-                      labelText: widget.istrainer == false
-                          ? 'Class Name'
-                          : 'Session Title',
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: widget.istrainer == false
+                    ? MainAxisAlignment.spaceBetween
+                    : MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: _classNameController,
+                      decoration: InputDecoration(
+                        labelText: widget.istrainer == false
+                            ? 'Class Name'
+                            : 'Session Title',
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      selectClassStartDate();
-                    },
-                    child: Text(
-                        'Start Date: ${_selectedStartDate.toString().split(' ')[0]}'),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        selectClassStartDate();
+                      },
+                      child: Text(
+                          'Start Date: ${_selectedStartDate.toString().split(' ')[0]}'),
+                    ),
                   ),
-                ),
-                widget.istrainer == false
-                    ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            selectClassEndDate();
-                          },
-                          child: Text(
-                              'End Date: ${_selectedEndDate.toString().split(' ')[0]}'),
-                        ),
-                      )
-                    : Container(),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      selectStartTime();
-                    },
-                    child: Text(
-                        'Start Time: ${_selectedStartTime.format(context)}'),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      selectEndTime();
-                    },
-                    child:
-                        Text('End Time: ${_selectedEndTime.format(context)}'),
-                  ),
-                ),
-                widget.istrainer == false
-                    ? Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            buildDayButton('Monday'),
-                            buildDayButton('Tuesday'),
-                            buildDayButton('Wednesday'),
-                            buildDayButton('Thursday'),
-                            buildDayButton('Friday'),
-                          ],
-                        ),
-                      )
-                    : Container(),
-                widget.istrainer == false
-                    ? Column(
-                        children: snapshot.data!.docs
-                            .map((DocumentSnapshot document) {
-                          Map<String, dynamic> userData =
-                              document.data() as Map<String, dynamic>;
-                          String selectedUserId = document.id;
-
-                          if (userData["role"] == 'class instructor') {
-                            return RadioListTile<String>(
-                              title: Text(
-                                userData['firstName'] +
-                                    ' ' +
-                                    userData["lastName"],
-                              ),
-                              value: selectedUserId,
-                              groupValue: userId,
-                              onChanged: (String? value) {
-                                setState(() {
-                                  userId = value!;
-                                });
-                              },
-                            );
-                          } else {
-                            return Container();
-                          }
-                        }).toList(),
-                      )
-                    : Container(),
-                CustomElevatedButton(
-                  buttonText: widget.istrainer == false
-                      ? "Schedule Class"
-                      : 'Schedule Session',
-                  size: 18,
-                  onPressed: () {
-                    // Check if class name is not empty
-                    if (_classNameController.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please enter a class name.'),
-                        ),
-                      );
-                      return; // Stop further execution
-                    }
-
-                    // Check if start date is before end date
-                    if (_selectedStartDate.isAfter(_selectedEndDate)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Start date cannot be after end date.'),
-                        ),
-                      );
-                      return; // Stop further execution
-                    }
-
-                    // Check if start time is before end time
-                    if (_selectedStartTime.hour > _selectedEndTime.hour ||
-                        (_selectedStartTime.hour == _selectedEndTime.hour &&
-                            _selectedStartTime.minute >=
-                                _selectedEndTime.minute)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Start time cannot be after end time.'),
-                        ),
-                      );
-                      return; // Stop further execution
-                    }
-
-                    // Check if at least one day is selected
-                    if (selectedDays.isEmpty && widget.istrainer == false) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please select at least one day.'),
-                        ),
-                      );
-                      return; // Stop further execution
-                    }
-
-                    // Check if userId is not empty
-                    if (userId.isEmpty && widget.istrainer == false) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('No instructor selected.'),
-                        ),
-                      );
-                      return; // Stop further execution
-                    }
-
-                    // If all checks passed, proceed to add the class
-                    Map<String, dynamic> data =
-                        getDocumentData(userId, snapshot.data!)
-                            as Map<String, dynamic>;
-
-                    String firstName = data["firstName"];
-                    String lastName = data["lastName"];
-
-                    widget.istrainer
-                        ? updatePTSessions(
-                            FirebaseAuth.instance.currentUser!.uid,
-                            {
-                              'sessionName': _classNameController.text,
-                              'startDate': _selectedStartDate,
-                              // 'endDate': _selectedEndDate,
-                              'startTime': _selectedStartTime.format(context),
-                              'endTime': _selectedEndTime.format(context),
+                  widget.istrainer == false
+                      ? Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              selectClassEndDate();
                             },
-                          ).whenComplete(() {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Session added successfully.'),
-                                duration: Duration(
-                                    seconds:
-                                        2), // Adjust the duration as needed
-                              ),
-                            );
-                          })
-                        : FirebaseHelperClass().addClass(
-                            context,
-                            _classNameController,
-                            _selectedStartDate,
-                            _selectedEndDate,
-                            _selectedStartTime,
-                            _selectedEndTime,
-                            'classes',
-                            selectedDays,
-                            userId,
-                            firstName + lastName);
-                  },
-                ),
-              ],
+                            child: Text(
+                                'End Date: ${_selectedEndDate.toString().split(' ')[0]}'),
+                          ),
+                        )
+                      : Container(),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        selectStartTime();
+                      },
+                      child: Text(
+                          'Start Time: ${_selectedStartTime.format(context)}'),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        selectEndTime();
+                      },
+                      child:
+                          Text('End Time: ${_selectedEndTime.format(context)}'),
+                    ),
+                  ),
+                  widget.istrainer == false
+                      ? Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: [
+                              buildDayButton('Monday'),
+                              buildDayButton('Tuesday'),
+                              buildDayButton('Wednesday'),
+                              buildDayButton('Thursday'),
+                              buildDayButton('Friday'),
+                            ],
+                          ),
+                        )
+                      : Container(),
+                  widget.istrainer == false
+                      ? Column(
+                          children: snapshot.data!.docs
+                              .map((DocumentSnapshot document) {
+                            Map<String, dynamic> userData =
+                                document.data() as Map<String, dynamic>;
+                            String selectedUserId = document.id;
+
+                            if (userData["role"] == 'class instructor') {
+                              return RadioListTile<String>(
+                                title: Text(
+                                  userData['firstName'] +
+                                      ' ' +
+                                      userData["lastName"],
+                                ),
+                                value: selectedUserId,
+                                groupValue: userId,
+                                onChanged: (String? value) {
+                                  setState(() {
+                                    userId = value!;
+                                  });
+                                },
+                              );
+                            } else {
+                              return Container();
+                            }
+                          }).toList(),
+                        )
+                      : Container(),
+                  CustomElevatedButton(
+                    buttonText: widget.istrainer == false
+                        ? "Schedule Class"
+                        : 'Schedule Session',
+                    size: 18,
+                    onPressed: () {
+                      // Check if class name is not empty
+                      if (_classNameController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter a class name.'),
+                          ),
+                        );
+                        return; // Stop further execution
+                      }
+
+                      // Check if start date is before end date
+                      if (_selectedStartDate.isAfter(_selectedEndDate)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text('Start date cannot be after end date.'),
+                          ),
+                        );
+                        return; // Stop further execution
+                      }
+
+                      // Check if start time is before end time
+                      if (_selectedStartTime.hour > _selectedEndTime.hour ||
+                          (_selectedStartTime.hour == _selectedEndTime.hour &&
+                              _selectedStartTime.minute >=
+                                  _selectedEndTime.minute)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text('Start time cannot be after end time.'),
+                          ),
+                        );
+                        return; // Stop further execution
+                      }
+
+                      // Check if at least one day is selected
+                      if (selectedDays.isEmpty && widget.istrainer == false) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please select at least one day.'),
+                          ),
+                        );
+                        return; // Stop further execution
+                      }
+
+                      // Check if userId is not empty
+                      if (userId.isEmpty && widget.istrainer == false) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('No instructor selected.'),
+                          ),
+                        );
+                        return; // Stop further execution
+                      }
+
+                      // If all checks passed, proceed to add the class
+                      Map<String, dynamic> data =
+                          getDocumentData(userId, snapshot.data!)
+                              as Map<String, dynamic>;
+
+                      String firstName = data["firstName"];
+                      String lastName = data["lastName"];
+
+                      widget.istrainer
+                          ? updatePTSessions(
+                              FirebaseAuth.instance.currentUser!.uid,
+                              {
+                                'sessionName': _classNameController.text,
+                                'startDate': _selectedStartDate,
+                                // 'endDate': _selectedEndDate,
+                                'startTime': _selectedStartTime.format(context),
+                                'endTime': _selectedEndTime.format(context),
+                              },
+                            ).whenComplete(() {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Session added successfully.'),
+                                  duration: Duration(
+                                      seconds:
+                                          2), // Adjust the duration as needed
+                                ),
+                              );
+                            })
+                          : FirebaseHelperClass().addClass(
+                              context,
+                              _classNameController,
+                              _selectedStartDate,
+                              _selectedEndDate,
+                              _selectedStartTime,
+                              _selectedEndTime,
+                              'classes',
+                              selectedDays,
+                              userId,
+                              firstName + lastName);
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         );
